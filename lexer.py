@@ -1,23 +1,18 @@
 from typing import Tuple
-
+L_PARENTHESES = ['(']
+R_PARENTHESES = [')']
+PARENTHESES = L_PARENTHESES + R_PARENTHESES
 
 class Lexer:
-
     def __init__(self, operator_registry):
         self.operator_registry = operator_registry
 
     def normalize(self, expression: str) -> str:
         return expression.replace(" ", "").replace("\t", "")
 
-    def read_number(self, expression: str, index: int) -> tuple[None, int] | tuple[float, int]:
+    def read_number(self, expression: str, index: int) -> tuple[float, int]:
         i = index
         length = len(expression)
-        minus_sum = 0
-
-        while i < length and expression[i] == '-':
-            minus_sum += 1
-            i += 1
-
         digit_start = i
         decimal = False
 
@@ -34,16 +29,56 @@ class Lexer:
             else:
                 break
 
-        if i == digit_start:  # if not number then return None, index, most likely unary - to be handled as an operator.
-            return None, index
-
-        number_str = expression[digit_start:i]
-
         try:
-            value = float(number_str) * (-1 if minus_sum % 2 == 1 else 1)
+            value = float(expression[digit_start:i])
             return value, i
         except:
             raise ValueError(f"[ERROR] failed to read number, invalid number format at index {index}")
 
     def tokenize(self, expression: str):
-        pass
+        expression = self.normalize(expression)
+        operators = self.operator_registry.get_all_operators()
+        i = 0
+        length = len(expression)
+        prev_token = None
+
+        while i < length:
+            char = expression[i]
+
+            if char == '-':
+                if prev_token in ['NUMBER', 'R_PARENTHESES']:
+                    yield 'b-'  # binary minus
+                else:
+                    yield 'u-'  # unary minus
+
+                prev_token = 'OPERATOR'
+
+                i+=1
+                continue
+
+            if char.isdigit():
+                number, new_i = self.read_number(expression, i)
+                yield number
+
+                prev_token = 'NUMBER'
+
+                i = new_i
+                continue
+
+            if char in operators or char in PARENTHESES:
+                yield char
+                if char in L_PARENTHESES:
+                    prev_token = "L_PARENTHESES"
+                elif char in R_PARENTHESES:
+                    prev_token = "R_PARENTHESES"
+                else:
+                    prev_token = "OPERATOR"
+
+                i += 1
+                continue
+
+            raise ValueError(f"[ERROR] illegal character {char} at index {i}")
+
+
+
+
