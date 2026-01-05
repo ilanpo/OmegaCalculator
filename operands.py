@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
 import math
 
+LEFT_ASSOCIATIVE = "left"
+RIGHT_ASSOCIATIVE = "right"
+
 
 class Operator(ABC):
-    def __init__(self, symbol: str, intensity: int):
+    def __init__(self, symbol: str, intensity: int, direction: str):
         self.symbol = symbol
         self.intensity = intensity
+        self.direction = direction
 
     @abstractmethod
     def calculate(self, *args) -> float:
@@ -13,6 +17,8 @@ class Operator(ABC):
 
 
 class OperatorBinary(Operator):
+    def __init__(self, symbol: str, intensity: int, direction: str = LEFT_ASSOCIATIVE):
+        super().__init__(symbol, intensity, direction)  # ALL binary operators are left associative
     @abstractmethod
     def calculate(self, operand1: float, operand2: float) -> float:
         pass
@@ -125,7 +131,7 @@ registry.register(Subtract('b-', 1))
 registry.register(Multiply('*', 2))
 registry.register(Divide('/', 2))
 
-registry.register(UnaryMinus('u-', 3))
+registry.register(UnaryMinus('u-', 3, RIGHT_ASSOCIATIVE))
 
 registry.register(Power('^', 4))
 
@@ -135,6 +141,6 @@ registry.register(Maximum('$', 6))
 registry.register(Minimum('&', 6))
 registry.register(Average('@', 6))
 
-registry.register(Factorial('!', 7))
-registry.register(Negate('~', 7))
-registry.register(DigitSum('#', 7))
+registry.register(Factorial('!', 7, LEFT_ASSOCIATIVE))
+registry.register(Negate('~', 7, RIGHT_ASSOCIATIVE))
+registry.register(DigitSum('#', 7, LEFT_ASSOCIATIVE))
