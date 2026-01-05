@@ -71,6 +71,11 @@ class OperatorUnary(Operator):
         pass
 
 
+class UnaryMinus(OperatorUnary):
+    def calculate(self, operand: float) -> float:
+        return -operand
+
+
 class Negate(OperatorUnary):
     def calculate(self, operand: float) -> float:
         return -operand
@@ -107,24 +112,29 @@ class OperatorRegistry:
             raise ValueError(f"[ERROR] unknown operator: {symbol}")
         return self.operators[symbol]
 
+    def get_all_operands(self):
+        return list(self.operators.keys())
+
 
 registry = OperatorRegistry()
 
 
 registry.register(Add('+', 1))
-registry.register(Subtract('-', 1))
+registry.register(Subtract('b-', 1))
 
 registry.register(Multiply('*', 2))
 registry.register(Divide('/', 2))
 
-registry.register(Power('^', 3))
+registry.register(UnaryMinus('u-', 3))
 
-registry.register(Modulo('%', 4))
+registry.register(Power('^', 4))
 
-registry.register(Maximum('$', 5))
-registry.register(Minimum('&', 5))
-registry.register(Average('@', 5))
+registry.register(Modulo('%', 5))
 
-registry.register(Factorial('!', 6))
-registry.register(Negate('~', 6))
-registry.register(DigitSum('#', 6))
+registry.register(Maximum('$', 6))
+registry.register(Minimum('&', 6))
+registry.register(Average('@', 6))
+
+registry.register(Factorial('!', 7))
+registry.register(Negate('~', 7))
+registry.register(DigitSum('#', 7))
