@@ -112,6 +112,9 @@ class OperatorRegistry:
             raise ValueError(f"[ERROR] unknown operator: {symbol}")
         return self.operators[symbol]
 
+    def get_all_operands(self):
+        return list(self.operators.keys())
+
 
 registry = OperatorRegistry()
 
