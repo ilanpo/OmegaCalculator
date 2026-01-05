@@ -3,6 +3,7 @@ L_PARENTHESES = ['(']
 R_PARENTHESES = [')']
 PARENTHESES = L_PARENTHESES + R_PARENTHESES
 
+
 class Lexer:
     def __init__(self, operator_registry):
         self.operator_registry = operator_registry
@@ -37,7 +38,7 @@ class Lexer:
 
     def tokenize(self, expression: str):
         expression = self.normalize(expression)
-        operators = self.operator_registry.get_all_operators()
+        operators = self.operator_registry.get_all_operands()
         i = 0
         length = len(expression)
         prev_token = None
