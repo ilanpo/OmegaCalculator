@@ -1,6 +1,9 @@
 import queue
 from collections import deque
 
+LEFT_ASSOCIATIVE = "left"
+RIGHT_ASSOCIATIVE = "right"
+
 
 class Parser:
     def __init__(self, operator_registry):
@@ -57,8 +60,8 @@ class Parser:
         operator_stack.append(token)
 
     def should_pop_op(self, current_op, top_op) -> bool:
-        if (current_op.direction == "left" and current_op.precedence <= top_op.precedence or
-                current_op.direction == "right" and current_op.precedence < top_op.precedence):
+        if (current_op.direction == LEFT_ASSOCIATIVE and current_op.precedence <= top_op.precedence or
+                current_op.direction == RIGHT_ASSOCIATIVE and current_op.precedence < top_op.precedence):
             return True
         return False
 

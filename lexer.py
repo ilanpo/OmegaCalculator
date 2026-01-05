@@ -67,12 +67,14 @@ class Lexer:
                 continue
 
             if char in operators or char in PARENTHESES:
-                yield char
                 if char in L_PARENTHESES:
+                    yield '('
                     prev_token = "L_PARENTHESES"
                 elif char in R_PARENTHESES:
+                    yield ')'
                     prev_token = "R_PARENTHESES"
                 else:
+                    yield char
                     prev_token = "OPERATOR"
 
                 i += 1
