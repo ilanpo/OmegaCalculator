@@ -5,6 +5,18 @@ LEFT_ASSOCIATIVE = "left"
 RIGHT_ASSOCIATIVE = "right"
 
 
+class OperandException(Exception):
+    pass
+
+
+class DivideByZeroException(OperandException):
+    pass
+
+
+class OperandNotFoundException(OperandException):
+    pass
+
+
 class Operator(ABC):
     def __init__(self, symbol: str, intensity: int, direction: str):
         self.symbol = symbol
@@ -37,7 +49,7 @@ class Subtract(OperatorBinary):
 class Divide(OperatorBinary):
     def calculate(self, operand1: float, operand2: float):
         if operand2 == 0:
-            raise ValueError("[ERROR] division by zero not allowed")
+            raise DivideByZeroException("[ERROR] division by zero not allowed")
         return operand1 / operand2
 
 
@@ -90,7 +102,7 @@ class Negate(OperatorUnary):
 class Factorial(OperatorUnary):
     def calculate(self, operand: float) -> float:
         if operand < 0 or not operand.is_integer():
-            raise ValueError("[ERROR] factorial only defined for positive whole numbers i.e integers")
+            raise OperandException("[ERROR] factorial only defined for positive whole numbers i.e integers")
         return math.factorial(int(operand))
 
 
@@ -107,18 +119,33 @@ class DigitSum(OperatorUnary):
 
 
 class OperatorRegistry:
+    """
+    used to flexibly store and retrieve the various operands
+    """
     def __init__(self):
         self.operators = {}
 
     def register(self, op: Operator):
+        """
+        stores an operand in the dict according to its symbol
+        :param op: operand to store
+        """
         self.operators[op.symbol] = op
 
     def get_operator(self, symbol: str) -> Operator:
+        """
+        checks if symbol is in the dict, if it is returns the operand function associated with it
+        :param symbol: symbol to search by
+        :return: Operator which the symbol belongs to
+        """
         if symbol not in self.operators:
-            raise ValueError(f"[ERROR] unknown operator: {symbol}")
+            raise OperandNotFoundException(f"[ERROR] unknown operator: {symbol}")
         return self.operators[symbol]
 
     def get_all_operands(self):
+        """
+        returns a list of all the symbols of the operands in the registry
+        """
         return list(self.operators.keys())
 
 
