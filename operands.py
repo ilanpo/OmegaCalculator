@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 import math
 from exceptions import OperandException, DivideByZeroException, OperandNotFoundException
 
-LEFT_ASSOCIATIVE = "left"
-RIGHT_ASSOCIATIVE = "right"
+LEFT_FACING = "left"
+RIGHT_FACING = "right"
 
 LEFT_PLACED = "left_of_value"
 BINARY = "between_values"
@@ -23,7 +23,7 @@ class Operator(ABC):
 
 
 class OperatorBinary(Operator):
-    def __init__(self, symbol: str, intensity: int, direction: str = RIGHT_ASSOCIATIVE):
+    def __init__(self, symbol: str, intensity: int, direction: str = LEFT_FACING):
         super().__init__(symbol, intensity, direction, BINARY)  # all go left-to-right according to instructions
 
 
@@ -76,11 +76,17 @@ class Minimum(OperatorBinary):
 
 class Average(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        flips the sign of the number
+        :param operand1: float to work with
+        :param operand1: second float to work with
+        :return: result as float
+        """
         return (operand1 + operand2) / 2
 
 
 class OperatorUnary(Operator):
-    def __init__(self, symbol: str, intensity: int, placement: str, direction: str = RIGHT_ASSOCIATIVE):
+    def __init__(self, symbol: str, intensity: int, placement: str, direction: str = RIGHT_FACING):
         super().__init__(symbol, intensity, direction, placement)  # all go left-to-right according to instructions
 
     @abstractmethod
@@ -90,16 +96,31 @@ class OperatorUnary(Operator):
 
 class UnaryMinus(OperatorUnary):
     def calculate(self, operand: float) -> float:
+        """
+        flips the sign of the number
+        :param operand: float to work with
+        :return: result as float
+        """
         return -operand
 
 
 class Negate(OperatorUnary):
     def calculate(self, operand: float) -> float:
+        """
+        flips the sign of the number
+        :param operand: float to work with
+        :return: result as float
+        """
         return -operand
 
 
 class Factorial(OperatorUnary):
     def calculate(self, operand: float) -> float:
+        """
+        calculates the factorial of operand
+        :param operand: float to work with
+        :return: result as float
+        """
         if operand < 0 or not operand.is_integer():
             raise OperandException("[ERROR] factorial only defined for positive whole numbers i.e integers")
         result = 1
@@ -110,6 +131,11 @@ class Factorial(OperatorUnary):
 
 class DigitSum(OperatorUnary):
     def calculate(self, operand: float) -> float:
+        """
+        sums all the digits in the operand
+        :param operand: float to work with
+        :return: result as float
+        """
         num_str = str(operand)
 
         total = 0

@@ -4,8 +4,8 @@ from lexer import Lexer
 from parser import Parser
 from solver import Solver
 
-LEFT_ASSOCIATIVE = "left"
-RIGHT_ASSOCIATIVE = "right"
+LEFT_FACING = "left"
+RIGHT_FACING = "right"
 
 LEFT_PLACED = "left_of_value"
 BINARY = "between_values"
@@ -16,7 +16,11 @@ UNARY_MINUS = 'u-'
 SIGN_MINUS = 's-'
 
 
-def setup_registry():
+def setup_registry() -> OperatorRegistry:
+    """
+    registers all operators to the registry so calculator recognises them
+    :return: OperatorRegistry object
+    """
     registry = OperatorRegistry()
 
     registry.register(Add('+', 1))
@@ -27,7 +31,7 @@ def setup_registry():
 
     registry.register(UnaryMinus(UNARY_MINUS, 3, RIGHT_PLACED))
 
-    registry.register(Power('^', 4, LEFT_ASSOCIATIVE))
+    registry.register(Power('^', 4, LEFT_FACING))
 
     registry.register(Modulo('%', 5))
 
@@ -51,7 +55,7 @@ class Calculator:
         self.parser = Parser(self.registry)
         self.solver = Solver(self.registry)
 
-    def calculate(self, user_input):
+    def calculate(self, user_input) -> float:
         """
         converts input into tokens then puts the into a queue in postfix order and then solves the expression
         :param user_input: mathematical expression as string

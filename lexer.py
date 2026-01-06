@@ -12,6 +12,11 @@ class TokenTypes:
     UNARY_MINUS = 'U_MINUS'
 
 
+LEFT_PLACED = "left_of_value"
+BINARY = "between_values"
+RIGHT_PLACED = "right_of_value"
+
+
 def _read_number(expression: str, index: int) -> tuple[float, int]:
     """
     scans expression starting from given index for a number (can be a float with a '.')
@@ -116,6 +121,8 @@ class Lexer:
                     self._handle_operator_token(i, char, prev_token)
                     if char == "~":
                         prev_token = TokenTypes.UNARY_MINUS
+                    elif self.operator_registry.get_operator(char).placement_rules == RIGHT_PLACED:
+                        prev_token = TokenTypes.NUMBER
                     else:
                         prev_token = TokenTypes.OPERATOR
                     yield char
