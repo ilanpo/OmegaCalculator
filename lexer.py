@@ -81,7 +81,13 @@ class Lexer:
 
             if char == '-':
                 if prev_token is None:
-                    yield self.unary_minus
+                    try:
+                        if expression[i+1] in self.L_PARENTHESES:
+                            yield self.unary_minus
+                        else:
+                            yield self.sign_minus
+                    except IndexError:
+                        raise UnaryMishandleError(f"[ERROR] incorrect unary minus at index {i}")
                     prev_token = TokenTypes.UNARY_MINUS
                 else:
                     minus_type, token_type = self._decide_minus_type(prev_token)
@@ -108,8 +114,12 @@ class Lexer:
                     prev_token = TokenTypes.R_PAREN
                 else:
                     self._handle_operator_token(i, char, prev_token)
-                    prev_token = TokenTypes.OPERATOR
-                yield char
+                    if char == "~":
+                        prev_token = TokenTypes.UNARY_MINUS
+                    else:
+                        prev_token = TokenTypes.OPERATOR
+                    yield char
+
                 i += 1
                 continue
 
@@ -139,11 +149,13 @@ class Lexer:
         :return: nothing, only raises errors if something's wrong
         """
         if prev_token == TokenTypes.UNARY_MINUS:
-            raise UnaryMishandleError(f"[ERROR] incorrect unary minus at index {index - 1}")
+            raise UnaryMishandleError(f"[ERROR] incorrect negation at index {index - 1}")
 
-        op_placement = self.operator_registry.get_placement_rules(char)
+        op_placement = self.operator_registry.get_operator(char).placement_rules
 
-        if op_placement in ["right_of_value", "between_values"] and prev_token != TokenTypes.NUMBER:
+        prev_is_value = prev_token in [TokenTypes.NUMBER, TokenTypes.R_PAREN]
+
+        if op_placement in ["right_of_value", "between_values"] and not prev_is_value:
             raise PlacementError(f"[ERROR] operand {char} placed in incorrect location {index}")
-        if op_placement == "left_of_value" and prev_token == TokenTypes.NUMBER:
+        if op_placement == "left_of_value" and prev_is_value:
             raise PlacementError(f"[ERROR] operand {char} placed in incorrect location {index}")

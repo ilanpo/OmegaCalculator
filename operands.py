@@ -5,12 +5,17 @@ from exceptions import OperandException, DivideByZeroException, OperandNotFoundE
 LEFT_ASSOCIATIVE = "left"
 RIGHT_ASSOCIATIVE = "right"
 
+LEFT_PLACED = "left_of_value"
+BINARY = "between_values"
+RIGHT_PLACED = "right_of_value"
+
 
 class Operator(ABC):
-    def __init__(self, symbol: str, intensity: int, direction: str):
+    def __init__(self, symbol: str, intensity: int, direction: str, placement_rules: str):
         self.symbol = symbol
         self.intensity = intensity
         self.direction = direction
+        self.placement_rules = placement_rules
 
     @abstractmethod
     def calculate(self, *args) -> float:
@@ -18,9 +23,9 @@ class Operator(ABC):
 
 
 class OperatorBinary(Operator):
-    def __init__(self, symbol: str, intensity: int, direction: str = LEFT_ASSOCIATIVE):
-        super().__init__(symbol, intensity, direction)  # ALL binary operators are left associative
-                                                        # (according to instructions)
+    def __init__(self, symbol: str, intensity: int, direction: str = RIGHT_ASSOCIATIVE):
+        super().__init__(symbol, intensity, direction, BINARY)  # all go left-to-right according to instructions
+
 
     @abstractmethod
     def calculate(self, operand1: float, operand2: float) -> float:
@@ -75,6 +80,9 @@ class Average(OperatorBinary):
 
 
 class OperatorUnary(Operator):
+    def __init__(self, symbol: str, intensity: int, placement: str, direction: str = RIGHT_ASSOCIATIVE):
+        super().__init__(symbol, intensity, direction, placement)  # all go left-to-right according to instructions
+
     @abstractmethod
     def calculate(self, operand: float) -> float:
         pass
@@ -95,7 +103,7 @@ class Factorial(OperatorUnary):
         if operand < 0 or not operand.is_integer():
             raise OperandException("[ERROR] factorial only defined for positive whole numbers i.e integers")
         result = 1
-        for i in range(int(operand)):
+        for i in range(1, int(operand) + 1):
             result *= i
         return float(result)
 

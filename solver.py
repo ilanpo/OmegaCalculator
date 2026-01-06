@@ -51,7 +51,9 @@ class Solver:
             if len(stack) < 2:
                 raise OperationExecutionError(f"[ERROR] not enough values for binary operator {symbol}")
 
-            stack.append(operator.calculate(stack.pop(), stack.pop()))
+            right_value = stack.pop()
+            left_value = stack.pop()
+            stack.append(operator.calculate(left_value, right_value))
 
         elif isinstance(operator, OperatorUnary):
             if len(stack) < 1:

@@ -2,8 +2,12 @@
 from collections import deque
 from exceptions import ParenthesesError, UnknownOperatorError, OperandNotFoundException
 
-LEFT_ASSOCIATIVE = "left"
-RIGHT_ASSOCIATIVE = "right"
+LEFT_FACING = "left"
+RIGHT_FACING = "right"
+
+LEFT_PLACED = "left_of_value"
+BINARY = "between_values"
+RIGHT_PLACED = "right_of_value"
 
 
 def _should_pop_op(current_op, top_op) -> bool:
@@ -14,11 +18,24 @@ def _should_pop_op(current_op, top_op) -> bool:
     :param top_op: top operator on the stack
     :return: boolean of whether it should be popped (True) or it shouldn't (False)
     """
-    if top_op.direction == RIGHT_ASSOCIATIVE and current_op.direction == RIGHT_ASSOCIATIVE:
-        return False
-    if (current_op.direction == LEFT_ASSOCIATIVE and current_op.intensity <= top_op.intensity or
-            current_op.direction == RIGHT_ASSOCIATIVE and current_op.intensity < top_op.intensity):
+    if current_op.intensity < top_op.intensity:
         return True
+
+    if current_op.direction == LEFT_FACING and current_op.intensity == top_op.intensity:
+        return True
+
+    if current_op.intensity > top_op.intensity:
+        return False
+
+    if current_op.placement_rules == RIGHT_PLACED and current_op.placement_rules == RIGHT_PLACED:
+        return True
+
+    if current_op.placement_rules == LEFT_PLACED and current_op.placement_rules == LEFT_PLACED:
+        return False
+
+    if current_op.direction == RIGHT_PLACED and top_op.direction == LEFT_PLACED:
+        return True
+
     return False
 
 

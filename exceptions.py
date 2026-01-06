@@ -28,7 +28,7 @@ class UnaryMishandleError(LexerError):
     pass
 
 
-class NegationError(LexerError):
+class PlacementError(LexerError):
     pass
 
 
