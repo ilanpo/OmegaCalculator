@@ -1,6 +1,7 @@
 
 from collections import deque
 from exceptions import ParenthesesError, UnknownOperatorError, OperandNotFoundException
+from operands import OperatorBinary, OperatorUnary
 
 LEFT_ASSOCIATIVE = "left"
 RIGHT_ASSOCIATIVE = "right"
@@ -14,8 +15,10 @@ def _should_pop_op(current_op, top_op) -> bool:
     :param top_op: top operator on the stack
     :return: boolean of whether it should be popped (True) or it shouldn't (False)
     """
-    if (current_op.direction == LEFT_ASSOCIATIVE and current_op.precedence <= top_op.precedence or
-            current_op.direction == RIGHT_ASSOCIATIVE and current_op.precedence < top_op.precedence):
+    if top_op.direction == RIGHT_ASSOCIATIVE and current_op.direction == RIGHT_ASSOCIATIVE:
+        return False
+    if (current_op.direction == LEFT_ASSOCIATIVE and current_op.intensity <= top_op.intensity or
+            current_op.direction == RIGHT_ASSOCIATIVE and current_op.intensity < top_op.intensity):
         return True
     return False
 

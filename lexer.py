@@ -3,16 +3,12 @@ from typing import Generator, Union
 from exceptions import InvalidNumberError, IllegalCharacterError
 
 
-class LexerTypes:
+class TokenTypes:
     # token types
     NUMBER = 'NUMBER'
     OPERATOR = 'OPERATOR'
     L_PAREN = 'L_PAREN'
     R_PAREN = 'R_PAREN'
-
-    # binary and unary minus for special logic
-    BINARY_MINUS = 'b-'
-    UNARY_MINUS = 'u-'
 
 
 def _read_number(expression: str, index: int) -> tuple[float, int]:
@@ -56,26 +52,17 @@ def _normalize(expression: str) -> str:
     return expression.replace(" ", "").replace("\t", "")
 
 
-def _decide_minus_type(prev_token: str) -> str:
-    """
-    decides if this token is a binary or unary minus based on previous token
-    :param prev_token: previous item in expression, whether number operator or parentheses
-    :return: either the symbol for a binary minus or the symbol for a unary minus
-    """
-    if prev_token in [LexerTypes.NUMBER, LexerTypes.R_PAREN]:
-        return LexerTypes.BINARY_MINUS
-    return LexerTypes.UNARY_MINUS
-
-
 class Lexer:
     L_PARENTHESES = ['(']
     R_PARENTHESES = [')']
     PARENTHESES = L_PARENTHESES + R_PARENTHESES
 
-    def __init__(self, operator_registry):
+    def __init__(self, operator_registry, binary_minus: str, unary_minus: str):
         self.operator_registry = operator_registry
+        self.binary_minus = binary_minus
+        self.unary_minus = unary_minus
 
-    def tokenize(self, expression: str) -> Generator[Union[str, float]]:
+    def tokenize(self, expression: str) -> Generator[Union[str, float], None, None]:
         """
         translates the expression to tokens of either a string if it's an operator/parentheses or float if it's a number
         :param expression: string containing expression to tokenize
@@ -92,9 +79,9 @@ class Lexer:
 
             if char == '-':
                 if prev_token is None:
-                    yield LexerTypes.UNARY_MINUS
+                    yield self.unary_minus
                 else:
-                    yield _decide_minus_type(prev_token)
+                    yield self._decide_minus_type(prev_token)
 
                 prev_token = 'OPERATOR'
 
@@ -113,15 +100,25 @@ class Lexer:
             if char in operators or char in self.PARENTHESES:
                 if char in self.L_PARENTHESES:
                     yield '('
-                    prev_token = LexerTypes.L_PAREN
+                    prev_token = TokenTypes.L_PAREN
                 elif char in self.R_PARENTHESES:
                     yield ')'
-                    prev_token = LexerTypes.R_PAREN
+                    prev_token = TokenTypes.R_PAREN
                 else:
                     yield char
-                    prev_token = LexerTypes.OPERATOR
+                    prev_token = TokenTypes.OPERATOR
 
                 i += 1
                 continue
 
             raise IllegalCharacterError(f"[ERROR] illegal character {char} at index {i}")
+
+    def _decide_minus_type(self, prev_token: str) -> str:
+        """
+        decides if this token is a binary or unary minus based on previous token
+        :param prev_token: previous item in expression, whether number operator or parentheses
+        :return: either the symbol for a binary minus or the symbol for a unary minus
+        """
+        if prev_token in [TokenTypes.NUMBER, TokenTypes.R_PAREN]:
+            return self.binary_minus
+        return self.unary_minus

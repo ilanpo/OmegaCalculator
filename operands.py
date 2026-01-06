@@ -28,49 +28,49 @@ class OperatorBinary(Operator):
 
 
 class Add(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return operand1 + operand2
 
 
 class Subtract(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return operand1 - operand2
 
 
 class Divide(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         if operand2 == 0:
             raise DivideByZeroException("[ERROR] division by zero not allowed")
         return operand1 / operand2
 
 
 class Multiply(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return operand1 * operand2
 
 
 class Power(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return math.pow(operand1, operand2)
 
 
 class Modulo(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return operand1 % operand2
 
 
 class Maximum(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return max(operand1, operand2)
 
 
 class Minimum(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return min(operand1, operand2)
 
 
 class Average(OperatorBinary):
-    def calculate(self, operand1: float, operand2: float):
+    def calculate(self, operand1: float, operand2: float) -> float:
         return (operand1 + operand2) / 2
 
 
@@ -94,7 +94,7 @@ class Factorial(OperatorUnary):
     def calculate(self, operand: float) -> float:
         if operand < 0 or not operand.is_integer():
             raise OperandException("[ERROR] factorial only defined for positive whole numbers i.e integers")
-        return math.factorial(int(operand))
+        return float(math.factorial(int(operand)))
 
 
 class DigitSum(OperatorUnary):
@@ -133,32 +133,8 @@ class OperatorRegistry:
             raise OperandNotFoundException(f"[ERROR] unknown operator: {symbol}")
         return self.operators[symbol]
 
-    def get_all_operands(self):
+    def get_all_operands(self) -> list[str]:
         """
         returns a list of all the symbols of the operands in the registry
         """
         return list(self.operators.keys())
-
-
-registry = OperatorRegistry()
-
-
-registry.register(Add('+', 1))
-registry.register(Subtract('b-', 1))
-
-registry.register(Multiply('*', 2))
-registry.register(Divide('/', 2))
-
-registry.register(UnaryMinus('u-', 3, RIGHT_ASSOCIATIVE))
-
-registry.register(Power('^', 4))
-
-registry.register(Modulo('%', 5))
-
-registry.register(Maximum('$', 6))
-registry.register(Minimum('&', 6))
-registry.register(Average('@', 6))
-
-registry.register(Factorial('!', 7, LEFT_ASSOCIATIVE))
-registry.register(Negate('~', 7, RIGHT_ASSOCIATIVE))
-registry.register(DigitSum('#', 7, LEFT_ASSOCIATIVE))

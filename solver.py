@@ -53,7 +53,7 @@ class Solver:
 
             stack.append(operator.calculate(stack.pop(), stack.pop()))
 
-        if isinstance(operator, OperatorUnary):
+        elif isinstance(operator, OperatorUnary):
             if len(stack) < 1:
                 raise OperationExecutionError(f"[ERROR] not enough values for binary operator {symbol}")
 
