@@ -42,7 +42,7 @@ def setup_registry():
 
 def main():
     registry = setup_registry()
-    lexer = Lexer(registry, BINARY_MINUS, UNARY_MINUS)
+    lexer = Lexer(registry, BINARY_MINUS, UNARY_MINUS, SIGN_MINUS)
     parser = Parser(registry)
     solver = Solver(registry)
 

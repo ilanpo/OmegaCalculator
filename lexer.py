@@ -1,6 +1,6 @@
 from typing import Generator, Union
 
-from exceptions import InvalidNumberError, IllegalCharacterError
+from exceptions import InvalidNumberError, IllegalCharacterError, UnaryMishandleError, NegationError
 
 
 class TokenTypes:
@@ -9,6 +9,7 @@ class TokenTypes:
     OPERATOR = 'OPERATOR'
     L_PAREN = 'L_PAREN'
     R_PAREN = 'R_PAREN'
+    UNARY_MINUS = 'U_MINUS'
 
 
 def _read_number(expression: str, index: int) -> tuple[float, int]:
@@ -57,10 +58,11 @@ class Lexer:
     R_PARENTHESES = [')']
     PARENTHESES = L_PARENTHESES + R_PARENTHESES
 
-    def __init__(self, operator_registry, binary_minus: str, unary_minus: str):
+    def __init__(self, operator_registry, binary_minus: str, unary_minus: str, sign_minus: str):
         self.operator_registry = operator_registry
         self.binary_minus = binary_minus
         self.unary_minus = unary_minus
+        self.sign_minus = sign_minus
 
     def tokenize(self, expression: str) -> Generator[Union[str, float], None, None]:
         """
@@ -80,10 +82,11 @@ class Lexer:
             if char == '-':
                 if prev_token is None:
                     yield self.unary_minus
+                    prev_token = TokenTypes.OPERATOR
                 else:
-                    yield self._decide_minus_type(prev_token)
-
-                prev_token = 'OPERATOR'
+                    minus_type, token_type = self._decide_minus_type(prev_token)
+                    yield minus_type
+                    prev_token = TokenTypes.UNARY_MINUS
 
                 i += 1
                 continue
@@ -92,7 +95,7 @@ class Lexer:
                 number, new_i = _read_number(expression, i)
                 yield number
 
-                prev_token = 'NUMBER'
+                prev_token = TokenTypes.NUMBER
 
                 i = new_i
                 continue
@@ -105,20 +108,28 @@ class Lexer:
                     yield ')'
                     prev_token = TokenTypes.R_PAREN
                 else:
+                    if prev_token == TokenTypes.UNARY_MINUS:
+                        raise UnaryMishandleError(f"[ERROR] incorrect unary minus at index {i - 1}")
                     yield char
-                    prev_token = TokenTypes.OPERATOR
+                    if char == '~':
+                        prev_token = TokenTypes.UNARY_MINUS
+                    else:
+                        prev_token = TokenTypes.OPERATOR
 
                 i += 1
                 continue
 
             raise IllegalCharacterError(f"[ERROR] illegal character {char} at index {i}")
 
-    def _decide_minus_type(self, prev_token: str) -> str:
+    def _decide_minus_type(self, prev_token: str) -> tuple[str, str]:
         """
-        decides if this token is a binary or unary minus based on previous token
+        decides if this token is a binary, unary or sign minus based on previous token
         :param prev_token: previous item in expression, whether number operator or parentheses
         :return: either the symbol for a binary minus or the symbol for a unary minus
         """
         if prev_token in [TokenTypes.NUMBER, TokenTypes.R_PAREN]:
-            return self.binary_minus
-        return self.unary_minus
+            return self.binary_minus, TokenTypes.OPERATOR
+        if prev_token in [TokenTypes.OPERATOR, TokenTypes.UNARY_MINUS]:
+            return self.sign_minus, TokenTypes.UNARY_MINUS
+        return self.unary_minus, TokenTypes.UNARY_MINUS
+

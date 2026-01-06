@@ -24,6 +24,14 @@ class IllegalCharacterError(LexerError):
     pass
 
 
+class UnaryMishandleError(LexerError):
+    pass
+
+
+class NegationError(LexerError):
+    pass
+
+
 # solvers errors
 class SolverException(Exception):
     pass

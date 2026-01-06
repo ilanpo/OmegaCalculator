@@ -1,7 +1,6 @@
 
 from collections import deque
 from exceptions import ParenthesesError, UnknownOperatorError, OperandNotFoundException
-from operands import OperatorBinary, OperatorUnary
 
 LEFT_ASSOCIATIVE = "left"
 RIGHT_ASSOCIATIVE = "right"

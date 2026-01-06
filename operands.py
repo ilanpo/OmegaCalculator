@@ -61,12 +61,12 @@ class Modulo(OperatorBinary):
 
 class Maximum(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
-        return max(operand1, operand2)
+        return operand1 if operand1 >= operand2 else operand2
 
 
 class Minimum(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
-        return min(operand1, operand2)
+        return operand1 if operand1 <= operand2 else operand2
 
 
 class Average(OperatorBinary):
@@ -94,7 +94,10 @@ class Factorial(OperatorUnary):
     def calculate(self, operand: float) -> float:
         if operand < 0 or not operand.is_integer():
             raise OperandException("[ERROR] factorial only defined for positive whole numbers i.e integers")
-        return float(math.factorial(int(operand)))
+        result = 1
+        for i in range(int(operand)):
+            result *= i
+        return float(result)
 
 
 class DigitSum(OperatorUnary):
