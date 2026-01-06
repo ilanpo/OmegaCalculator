@@ -1,20 +1,9 @@
 from abc import ABC, abstractmethod
 import math
+from exceptions import OperandException, DivideByZeroException, OperandNotFoundException
 
 LEFT_ASSOCIATIVE = "left"
 RIGHT_ASSOCIATIVE = "right"
-
-
-class OperandException(Exception):
-    pass
-
-
-class DivideByZeroException(OperandException):
-    pass
-
-
-class OperandNotFoundException(OperandException):
-    pass
 
 
 class Operator(ABC):
@@ -31,6 +20,8 @@ class Operator(ABC):
 class OperatorBinary(Operator):
     def __init__(self, symbol: str, intensity: int, direction: str = LEFT_ASSOCIATIVE):
         super().__init__(symbol, intensity, direction)  # ALL binary operators are left associative
+                                                        # (according to instructions)
+
     @abstractmethod
     def calculate(self, operand1: float, operand2: float) -> float:
         pass

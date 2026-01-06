@@ -1,13 +1,6 @@
 from collections import deque
 from operands import OperatorBinary, OperatorUnary
-
-
-class SolverException(Exception):
-    pass
-
-
-class OperationExecutionError(SolverException):
-    pass
+from exceptions import SolverException, OperationExecutionError
 
 
 class Solver:
@@ -31,7 +24,7 @@ class Solver:
                 stack.append(token)
 
             elif isinstance(token, str):
-                self.handle_operation(token, stack)
+                self._handle_operation(token, stack)
 
             else:
                 raise SolverException(f"[ERROR] unexpected token type in solver queue: {type(token)}")
@@ -41,7 +34,7 @@ class Solver:
 
         return stack.pop()
 
-    def handle_operation(self, symbol: str, stack: list):
+    def _handle_operation(self, symbol: str, stack: list):
         """
         does the appropriate calculation on the values in the stack according to given operator
         :param symbol: symbol of operator to be used
