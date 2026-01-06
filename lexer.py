@@ -1,6 +1,6 @@
 from typing import Generator, Union
 
-from exceptions import InvalidNumberError, IllegalCharacterError, UnaryMishandleError, NegationError
+from exceptions import InvalidNumberError, IllegalCharacterError, UnaryMishandleError, PlacementError
 
 
 class TokenTypes:
@@ -63,6 +63,7 @@ class Lexer:
         self.binary_minus = binary_minus
         self.unary_minus = unary_minus
         self.sign_minus = sign_minus
+        self.operators = self.operator_registry.get_all_operands()
 
     def tokenize(self, expression: str) -> Generator[Union[str, float], None, None]:
         """
@@ -71,7 +72,6 @@ class Lexer:
         :return: string if it's an operator/parentheses or float if it's a number
         """
         expression = _normalize(expression)
-        operators = self.operator_registry.get_all_operands()
         i = 0
         length = len(expression)
         prev_token = None
@@ -82,11 +82,11 @@ class Lexer:
             if char == '-':
                 if prev_token is None:
                     yield self.unary_minus
-                    prev_token = TokenTypes.OPERATOR
+                    prev_token = TokenTypes.UNARY_MINUS
                 else:
                     minus_type, token_type = self._decide_minus_type(prev_token)
                     yield minus_type
-                    prev_token = TokenTypes.UNARY_MINUS
+                    prev_token = token_type
 
                 i += 1
                 continue
@@ -96,11 +96,10 @@ class Lexer:
                 yield number
 
                 prev_token = TokenTypes.NUMBER
-
                 i = new_i
                 continue
 
-            if char in operators or char in self.PARENTHESES:
+            if char in self.operators or char in self.PARENTHESES:
                 if char in self.L_PARENTHESES:
                     yield '('
                     prev_token = TokenTypes.L_PAREN
@@ -108,14 +107,9 @@ class Lexer:
                     yield ')'
                     prev_token = TokenTypes.R_PAREN
                 else:
-                    if prev_token == TokenTypes.UNARY_MINUS:
-                        raise UnaryMishandleError(f"[ERROR] incorrect unary minus at index {i - 1}")
-                    yield char
-                    if char == '~':
-                        prev_token = TokenTypes.UNARY_MINUS
-                    else:
-                        prev_token = TokenTypes.OPERATOR
-
+                    self._handle_operator_token(i, char, prev_token)
+                    prev_token = TokenTypes.OPERATOR
+                yield char
                 i += 1
                 continue
 
@@ -125,11 +119,31 @@ class Lexer:
         """
         decides if this token is a binary, unary or sign minus based on previous token
         :param prev_token: previous item in expression, whether number operator or parentheses
-        :return: either the symbol for a binary minus or the symbol for a unary minus
+        :return: the appropriate minus symbol
         """
         if prev_token in [TokenTypes.NUMBER, TokenTypes.R_PAREN]:
             return self.binary_minus, TokenTypes.OPERATOR
+
         if prev_token in [TokenTypes.OPERATOR, TokenTypes.UNARY_MINUS]:
             return self.sign_minus, TokenTypes.UNARY_MINUS
+
         return self.unary_minus, TokenTypes.UNARY_MINUS
 
+    def _handle_operator_token(self, index: int, char: str, prev_token: str):
+        """
+        gets the location and char of an operator alongside the previous tokens type and checks for whether the rules
+        describing its placement are followed
+        :param index: index of operator
+        :param char: symbol of operator
+        :param prev_token: previous token in expression
+        :return: nothing, only raises errors if something's wrong
+        """
+        if prev_token == TokenTypes.UNARY_MINUS:
+            raise UnaryMishandleError(f"[ERROR] incorrect unary minus at index {index - 1}")
+
+        op_placement = self.operator_registry.get_placement_rules(char)
+
+        if op_placement in ["right_of_value", "between_values"] and prev_token != TokenTypes.NUMBER:
+            raise PlacementError(f"[ERROR] operand {char} placed in incorrect location {index}")
+        if op_placement == "left_of_value" and prev_token == TokenTypes.NUMBER:
+            raise PlacementError(f"[ERROR] operand {char} placed in incorrect location {index}")
