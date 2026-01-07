@@ -1,5 +1,4 @@
 from operands import *
-from exceptions import *
 from lexer import Lexer
 from parser import Parser
 from solver import Solver

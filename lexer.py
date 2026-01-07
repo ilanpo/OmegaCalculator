@@ -16,6 +16,10 @@ LEFT_PLACED = "left_of_value"
 BINARY = "between_values"
 RIGHT_PLACED = "right_of_value"
 
+L_PARENTHESES = ['(']
+R_PARENTHESES = [')']
+PARENTHESES = L_PARENTHESES + R_PARENTHESES
+
 
 def _normalize(expression: str) -> str:
     """
@@ -94,7 +98,7 @@ class MinusHandler(TokenHandler):
             if info.prev_token in [TokenTypes.NUMBER, TokenTypes.R_PAREN]:
                 info.prev_token = TokenTypes.OPERATOR
                 yield self.binary_minus
-            elif info.prev_token in [TokenTypes.OPERATOR, TokenTypes.UNARY_MINUS]:
+            elif info.prev_token in [TokenTypes.OPERATOR, TokenTypes.UNARY_MINUS, TokenTypes.L_PAREN]:
                 info.prev_token = TokenTypes.UNARY_MINUS
                 yield self.sign_minus
             else:
@@ -146,10 +150,6 @@ class ValueHandler(TokenHandler):
 
 
 class OperatorHandler(TokenHandler):
-    L_PARENTHESES = ['(']
-    R_PARENTHESES = [')']
-    PARENTHESES = L_PARENTHESES + R_PARENTHESES
-
     def __init__(self, operator_registry):
         self.operator_registry = operator_registry
         self.operators = operator_registry.get_all_operands()
@@ -159,7 +159,7 @@ class OperatorHandler(TokenHandler):
         :param info: info object of expression
         :return: whether current char were on can be handled by this handler
         """
-        return info.current_char() in self.operators or info.current_char() in self.PARENTHESES
+        return info.current_char() in self.operators or info.current_char() in PARENTHESES
 
     def handle(self, info: ExpressionInfo) -> Generator[Union[str, float], None, None]:
         """
@@ -169,12 +169,12 @@ class OperatorHandler(TokenHandler):
         """
         char = info.current_char()
 
-        if char in self.L_PARENTHESES:
+        if char in L_PARENTHESES:
             yield '('
             info.prev_token = TokenTypes.L_PAREN
             info.next()
             return
-        elif char in self.R_PARENTHESES:
+        elif char in R_PARENTHESES:
             yield ')'
             info.prev_token = TokenTypes.R_PAREN
             info.next()
@@ -216,7 +216,7 @@ class Lexer:
     def __init__(self, operator_registry, binary_minus: str, unary_minus: str, sign_minus: str):
         self.handlers = [
             MinusHandler(binary_minus, unary_minus, sign_minus),
-            ValueHandler,
+            ValueHandler(),
             OperatorHandler(operator_registry)
         ]
 
