@@ -87,10 +87,10 @@ class Lexer:
             if char == '-':
                 if prev_token is None:
                     try:
-                        if expression[i+1] in self.L_PARENTHESES:
-                            yield self.unary_minus
-                        else:
+                        if expression[i+1] == "-":
                             yield self.sign_minus
+                        else:
+                            yield self.unary_minus
                     except IndexError:
                         raise UnaryMishandleError(f"[ERROR] incorrect unary minus at index {i}")
                     prev_token = TokenTypes.UNARY_MINUS
