@@ -26,7 +26,6 @@ class OperatorBinary(Operator):
     def __init__(self, symbol: str, intensity: int, direction: str = LEFT_FACING):
         super().__init__(symbol, intensity, direction, BINARY)  # all go left-to-right according to instructions
 
-
     @abstractmethod
     def calculate(self, operand1: float, operand2: float) -> float:
         pass
@@ -34,16 +33,34 @@ class OperatorBinary(Operator):
 
 class Add(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns operand 1 added to operand 2
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         return operand1 + operand2
 
 
 class Subtract(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns operand 1 minus operand 2
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         return operand1 - operand2
 
 
 class Divide(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns operand 1 divided by operand 2
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         if operand2 == 0:
             raise DivideByZeroException("[ERROR] division by zero not allowed")
         return operand1 / operand2
@@ -51,35 +68,65 @@ class Divide(OperatorBinary):
 
 class Multiply(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns operand 1 multiplied by operand 2
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         return operand1 * operand2
 
 
 class Power(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns operand 1 to the power of operand 2
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         return math.pow(operand1, operand2)
 
 
 class Modulo(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns operand 1 modulo operand 2
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         return operand1 % operand2
 
 
 class Maximum(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns bigger number of the two
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         return operand1 if operand1 >= operand2 else operand2
 
 
 class Minimum(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
+        """
+        returns smaller number of the two
+        :param operand1: float to work with
+        :param operand2: second float to work with
+        :return: result as float
+        """
         return operand1 if operand1 <= operand2 else operand2
 
 
 class Average(OperatorBinary):
     def calculate(self, operand1: float, operand2: float) -> float:
         """
-        flips the sign of the number
+        calculates the average of two given numbers
         :param operand1: float to work with
-        :param operand1: second float to work with
+        :param operand2: second float to work with
         :return: result as float
         """
         return (operand1 + operand2) / 2
