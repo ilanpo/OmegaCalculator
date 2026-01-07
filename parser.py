@@ -39,35 +39,12 @@ def _should_pop_op(current_op, top_op) -> bool:
     return False
 
 
-def _finalize(operator_stack: list, output_queue: deque):
-    """
-    helper that does the final clearing of the operator stack, also checks if we have too many left parentheses
-    :param operator_stack: current operator stack
-    :param output_queue: current output queue
-    """
-    while operator_stack:
-        if operator_stack[-1] == '(':
-            raise ParenthesesError(f"[ERROR] mismatched parentheses: too many left parentheses")
-        output_queue.append(operator_stack.pop())
-
-
-def _handle_right_parentheses(operator_stack: list, output_queue: deque):
-    """
-    helper to handle case where right parentheses is generated
-    :param operator_stack: current operator stack
-    :param output_queue: current output queue
-    """
-    try:
-        while operator_stack[-1] != '(':
-            output_queue.append(operator_stack.pop())
-        operator_stack.pop()
-    except IndexError:
-        raise ParenthesesError(f"[ERROR] mismatched parentheses: too many right parentheses")
-
-
 class Parser:
     def __init__(self, operator_registry):
         self.operator_registry = operator_registry
+
+        self._output_queue = None
+        self._operator_stack = None
 
     def parse(self, token_generator) -> deque:
         """
@@ -75,41 +52,55 @@ class Parser:
         :param token_generator: tokenizer from lexer, yields either float for numbers or string for operands/parentheses
         :return: queue containing postfix order tokens
         """
-        output_queue = deque()
-        operator_stack = []
+        self._output_queue = deque()
+        self._operator_stack = []
 
         for token in token_generator:
-            if isinstance(token, float):
-                output_queue.append(token)
+            self._determine_token(token)
 
-            elif token == '(':
-                operator_stack.append(token)
+        self._finalize()
+        return self._output_queue
 
-            elif token == ')':
-                _handle_right_parentheses(operator_stack, output_queue)
+    def _determine_token(self, token):
+        """
+        determines token type and either calls appropriate helper or handles it
+        :param token: token to be determined
+        """
+        if isinstance(token, float):
+            self._output_queue.append(token)
 
-            else:
-                self._handle_operator(token, operator_stack, output_queue)
+        elif token == '(':
+            self._operator_stack.append(token)
 
-        _finalize(operator_stack, output_queue)
+        elif token == ')':
+            self._handle_right_parentheses()
 
-        return output_queue
+        else:
+            self._handle_operator(token)
 
-    def _handle_operator(self, token: str, operator_stack: list, output_queue: deque):
+    def _handle_right_parentheses(self):
+        """
+        helper to handle case where right parentheses is generated
+        """
+        try:
+            while self._operator_stack[-1] != '(':
+                self._output_queue.append(self._operator_stack.pop())
+            self._operator_stack.pop()
+        except IndexError:
+            raise ParenthesesError(f"[ERROR] mismatched parentheses: too many right parentheses")
+
+    def _handle_operator(self, token: str):
         """
         helper to handle case where operator is generated depending on direction of operator and precedence
         :param token: the operator token to be handled
-        :param operator_stack: current operator stack
-        :param output_queue: current output queue
-        :return:
         """
         try:
             current_operator = self.operator_registry.get_operator(token)
         except OperandNotFoundException:
             raise UnknownOperatorError(f"[ERROR] unknown operator token: {token}")
 
-        while operator_stack:
-            top_token = operator_stack[-1]
+        while self._operator_stack:
+            top_token = self._operator_stack[-1]
 
             if top_token == '(':
                 break
@@ -117,8 +108,17 @@ class Parser:
             top_operator = self.operator_registry.get_operator(top_token)
 
             if _should_pop_op(current_operator, top_operator):
-                output_queue.append(operator_stack.pop())
+                self._output_queue.append(self._operator_stack.pop())
             else:
                 break
 
-        operator_stack.append(token)
+        self._operator_stack.append(token)
+
+    def _finalize(self):
+        """
+        helper that does the final clearing of the operator stack, also checks if we have too many left parentheses
+        """
+        while self._operator_stack:
+            if self._operator_stack[-1] == '(':
+                raise ParenthesesError(f"[ERROR] mismatched parentheses: too many left parentheses")
+            self._output_queue.append(self._operator_stack.pop())
